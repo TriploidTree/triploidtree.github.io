@@ -43,7 +43,8 @@ sub fm( $file ) {
 }
 
 sub caption_hack( $fm ) {
-    $fm->data_text =~ s/\[caption .*?\]<a\ href.*?>(<img.*?>)<\/a>\ ?(.*)?\[\/caption\]/<figure>$1<figcaption>$2<\/figcaption><\/figure>/gr;
+    $fm->data_text =~ s/\[caption .*?\]<a\ href.*?>(<img.*?>)<\/a>\ ?(.*)?\[\/caption\]/<figure>$1<figcaption>$2<\/figcaption><\/figure>/gr =~
+                      s/<!--more-->//gr;
 }
 
 sub fixes( $markup, $wp_posts ) {
