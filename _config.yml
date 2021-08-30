@@ -21,8 +21,8 @@
 title: "Science is Delicious"
 description: "Mostly about science and cake and, sometimes, both"
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://triploidtree.github.io/"
-#url: "https://www.scienceisdelicious.net/"
+#url: "https://triploidtree.github.io"
+url: "https://www.scienceisdelicious.net"
 twitter_username: TriploidTree
 logo: "/images/avatar.jpg"
 
