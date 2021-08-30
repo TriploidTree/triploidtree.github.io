@@ -25,7 +25,7 @@ use Path::This '$THISDIR';
 
 my $posts = "$THISDIR/../_posts";
 my $wpxml = "$THISDIR/wordpress.xml";
-my $site_re = qr{^https?://(?:www\.)scienceisdelicious.net}i;
+my $site_re = qr{^https?://(?:www\.)?scienceisdelicious.net}i;
 
 sub posts( $dir = $posts ) {
     io->dir( $dir )->all
