@@ -57,7 +57,7 @@ sub fixes( $markup, $wp_posts ) {
         }
     } );
     $dom->find('p')->each( sub( $e, $n ) {
-        $e->replace( $e->content . "\n<!--more-->\n" ) if $n == 1;
+        $e->replace( $e->content . "\n<!--more-->\n" ) if $n == 2;
     } );
     $dom->content;
 }
