@@ -52,7 +52,7 @@ defaults:
     values:
       layout: post
       comments: false
-      share: true
+      share: false
   # Recipe defaults
   - scope:
       path: "_recipes"
@@ -60,7 +60,7 @@ defaults:
     values:
       layout: post
       comments: false
-      share: true
+      share: false
 
 # Build settings
 markdown: kramdown
