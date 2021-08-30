@@ -1,0 +1,77 @@
+---
+layout: post
+title: 'Graphing with the twitter archive and R : or how I tweet too much'
+date: 2013-04-16 15:53:36.000000000 +01:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- Science
+tags:
+- ggplot2
+- graphs
+- R
+- twitter
+meta:
+  _edit_last: '1'
+author:
+  login: SciencePress
+  email: triona@gmail.com
+  display_name: Tríona
+  first_name: Tríona
+  last_name: ''
+permalink: "/"
+---
+<p>So last weekend, <a href="https://twitter.com/encephalartos" title="https://twitter.com/encephalartos" target="_blank">@encephalartos</a> produced a <a href="https://twitter.com/encephalartos/status/323168605313318914" title="https://twitter.com/encephalartos/status/323168605313318914" target="_blank">graph of his tweets</a> as extracted from his twitter archive, and thereby tempted me to spend the rest of my weekend and some extra time beyond figuring out how he did it. Turns out he used excel to break the timestamps and R to do the rest, but I didn't realise he used excel till I had spent hours figuring out time in R, so I present to you the entirely R way of doing it.</p>
+<p>I like to use <a href="http://www.rstudio.com/ide/download/" title="http://www.rstudio.com/ide/download/" target="_blank">Rstudio</a> for doing my R work.  It's available for Linux, Windows and Mac so you've no excuse.  Most of my R knowledge comes from workshops that <a href="https://twitter.com/kobriendublin" title="https://twitter.com/kobriendublin" target="_blank">Kevin O'Brien</a> ran in <a href="http://tog.ie/" title="http://tog.ie/" target="_blank">Tog</a>.  If you're based in Dublin and want to hang with some R folk, the <a href="http://www.meetup.com/DublinR/" title="http://www.meetup.com/DublinR/" target="_blank">Dublin R group</a> meets (ir)regularly around town.</p>
+<p>The Twitter archive is a great excuse to practise your R skills, as (depending on how much you tweet) it's a nice large dataset with results that will be interesting but not critical to the running of the world.  You can download your archive by going to the settings page on twitter.com and at the very end, there's a button to click to request your archive.  After a few minutes you get an email with a link to download the zipped archive that contains lots of delicious data.  For these graphs, you only need the file tweets.csv which contains all your data as a handy flat file, where columns are separated by commas.</p>
+<p><strong>Getting the archive ready to graph</strong></p>
+<p>Importing your archive in Rstudio is really easy. Go to Tools>Import Dataset and follow the instructions (or you could look up a tutorial how to do it the proper R way, but why have an IDE if you don't use it :) ).  The default settings should cover the tweets.csv but double check that it looks right in the preview pane.</p>
+<p>The timestamps column is what's interesting to us today. It's formatted in <a href="http://en.wikipedia.org/wiki/ISO_8601" title="http://en.wikipedia.org/wiki/ISO_8601" target="_blank">ISO 8601</a> format, but Rstudio will have imported it as a character rather than a date, so we have to do some quick conversions.</p>
+<p>You will also need to install/load the relevant libraries for the date handling and graphing.<br />
+<code><br />
+install.packages("ggplot2")<br />
+install.packages("scales")<br />
+install.packages("lubridate")<br />
+#You only need to install once, but you need to load with library() every session.</p>
+<p>library(ggplot2)<br />
+library(scales)<br />
+library(lubridate)<br />
+ </code><br />
+Convert the timestamp to POSIXct format using as.POSIXct() and put it in a new column (I don't like overwriting old columns).<br />
+ <code><br />
+tweets$posix_timestamp <- as.POSIXct(strptime(tweets$timestamp, '%Y-%m-%d %H:%M:%S'))<br />
+</code><br />
+If you run <code>data.class(posix_timestamp)</code> it should return "POSIXct", confirming the data translation worked. Incidentally, when I looked at my new posix_timestamp column, I saw that it ended in GMT and IST depending on the time of year, it would seem IST is Irish Standard Time, which is equivalent to BST (British Summer Time).  I think the conversion to IST might be due to my system settings being for Ireland.</p>
+<p><strong>Graphing tweets by week</strong></p>
+<p>Once you have the dates converted to POSIX format you're pretty much there, you just need to generate the graph!<br />
+<code><br />
+ggplot(tweets, aes(x=posix_timestamp))  + geom_histogram(binwidth = 60*60*24*7, aes(fill = ..count..)) +scale_fill_gradient("Count", low = "skyblue", high = "blue") + xlab("Date") + ggtitle("Tríona's Twitter output by week")<br />
+</code><br />
+The natural bins for POSIXct objects are 1 second, so to get week-long bars, you have to multiply them up. The start of the "week" is presumably the start day of the archive itself, I need to get around to figuring that out.</p>
+<p>You can play around with the binwidth to get days or years as you fancy. Likewise you can change the colours and titles.</p>
+<p>[caption id="attachment_409" align="aligncenter" width="607"]<a href="http://www.scienceisdelicious.net/?attachment_id=409" rel="attachment wp-att-409"><img src="{{ site.baseurl }}/images/2013/04/outputbyweek.png" alt="All my tweets since I joined twitter, graphed by week. Includes retweets and I have no idea when the start of the &quot;weeks&quot; are..." width="607" height="367" class="size-full wp-image-409" /></a> All my tweets since I joined twitter, graphed by week. Includes retweets and I have no idea when the start of the "weeks" are...[/caption]</p>
+<p>In Rstudio, you can export your graph by clicking on the little "export" button over where the graph appeared.  I like to export and .png but you can make your own choices about your preferred image type.</p>
+<p><strong>Graphing hours vs. weeks</strong></p>
+<p>Now that the time is in a POSIX friendly format from earlier, it's easy to extract parts of the date using the Lubridate package we installed.<br />
+<code><br />
+tweets$day_of_week <- wday(tweets$posix_timestamp, label = TRUE, abbr = FALSE)<br />
+tweets$hour_of_day <- hour(tweets$posix_timestamp)<br />
+ </code><br />
+We then take these new columns and convert them into a table to make them easier to graph as their frequencies will be listed.  A table can't be directly graphed, so we convert it into a dataframe and we can work on from there.<br />
+ <code><br />
+daytime <- table(tweets$hour_of_day, tweets$day_of_week)<br />
+dfdaytime <- as.data.frame(daytime)<br />
+</code><br />
+dfdaytime should be return data frame rather than table when you run <code>data.class(dfdaytime)</code>.</p>
+<p>R will have renamed the columns when it created the table, with hour_of_day becoming Var1 and day_of_week becoming Var2. Frequency will be in a third column called Freq</p>
+<p>Now that we have the new dataframe made, we can plot the graph!<br />
+<code><br />
+ggplot(dfdaytime, aes(x=Var2, y=Var1, fill=Freq)) + geom_tile() + scale_fill_gradient(low = "skyblue", high = "hotpink") + ggtitle("Heatmap of Tríona's tweets by day vs. hour") + xlab("Day of week") + ylab ("hour of day")</code></p>
+<p>As before, fiddling with the colours and labels of axes and graph title are easy.  Choosing a colour that makes the data clearest is the hard part...</p>
+<p>[caption id="attachment_408" align="aligncenter" width="607"]<a href="http://www.scienceisdelicious.net/?attachment_id=408" rel="attachment wp-att-408"><img src="{{ site.baseurl }}/images/2013/04/dayvshour.png" alt="Graph of my tweets by day vs. hour. You can see when I tweet most, and when I sleep most. As this archive has 5 years of tweets in it, the during-work-hours tweets may be from before I started the PhD proper..." width="607" height="367" class="size-full wp-image-408" /></a> Graph of my tweets by day vs. hour. You can see when I tweet most, and when I sleep most. As this archive has 5 years of tweets in it, the during-work-hours tweets may be from before I started the PhD proper...[/caption]</p>
+<p><strong>Further rambling</strong></p>
+<p>ggplot2 is a pretty powerful package in R for making graphs, and thanks to this bit of twitterage, I'm that bit closer to mastering it.  Part of its power comes in the piecemeal assembly of the graphs (you spotted the +'s between each chunk of graph code), so after declaring what you want in the graph and the type of graph, you can start adding on other bit to en-fancy-fy the graph further.</p>
+<p>The graphs include retweets, so I need to figure out the easiest way to sieve them out (about 25% of my tweets are retweets).  I also need to figure out how to make the bins align with the start of the week. I should probably also reproduce the heatmap for the last year, so my supervisors can see I don't spend my entire work day tweeting :D</p>
