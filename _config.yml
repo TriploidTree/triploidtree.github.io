@@ -21,8 +21,10 @@
 title: "Science is Delicious"
 description: "Mostly about science and cake and, sometimes, both"
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://triploidtree.github.io/"
+#url: "https://www.scienceisdelicious.net/"
 twitter_username: TriploidTree
+logo: "/images/avatar.jpg"
 
 # Build settings
 remote_theme: "mmistakes/so-simple-theme@3.2.0"
